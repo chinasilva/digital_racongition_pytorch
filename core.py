@@ -3,9 +3,7 @@ import torchvision
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 from PIL import Image
-from src.main import device_fun
 
-device=device_fun() 
 
 
 def core(net, img_path):
@@ -21,8 +19,6 @@ def core(net, img_path):
     ])
 
     img = transform(Image.open(img_path)).unsqueeze(0) * -1
-    img = img.to(device)
-    output = net(img).to(device)
 
     
     # generate probability

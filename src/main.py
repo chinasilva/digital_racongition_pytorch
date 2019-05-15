@@ -21,13 +21,6 @@ def main():
     net = ExampleNet()
     criterion=nn.CrossEntropyLoss()
 
-    # 定义使用GPU
-    device=device_fun()
-    print(device)
-
-    #调用cuda
-    net.to(device)
-    criterion.to(device)
 
     # criterion = nn.MSELoss(reduce=None, size_average=None, reduction='mean')
     optimizer = optim.Adam(net.parameters(), weight_decay=0,
@@ -54,8 +47,6 @@ def main():
         for j, (input, target) in enumerate(dataloader):
             # if iscuda
 
-            input=input.to(device)   
-            target=target.to(device)
 
 
             output = net(input)
@@ -78,8 +69,6 @@ def main():
             correct = 0
             total = 0
             for input, target in testdataloader:
-                input=input.to(device)    # GPU 
-                target=target.to(device) # GPU
 
                 output = net(input)
                 
@@ -90,5 +79,5 @@ def main():
                 accuracy = correct.float() / total
             print(
                 "[epochs - {0}]Accuracy:{1}%".format(i + 1, (100 * accuracy)))
-    save_model = torch.jit.trace(net,  torch.rand(1, 1, 28, 28).to(device))
+    save_model = torch.jit.trace(net,  torch.rand(1, 1, 28, 28))
     save_model.save("models/net.pth")

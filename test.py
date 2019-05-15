@@ -5,11 +5,9 @@ import base64
 
 from flask import Flask, request, jsonify, json, render_template
 from core import core
-from src.main import device_fun
 
 app = Flask(__name__)
 
-device=device_fun() 
 
 net = torch.jit.load("models/net.pth")
 
