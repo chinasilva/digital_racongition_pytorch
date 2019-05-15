@@ -47,7 +47,7 @@ def main():
         "datasets/", train=False, download=True, transform=transform)
     testdataloader = torch.utils.data.DataLoader(
         testdataset, batch_size=batch_size, shuffle=False)
-
+ 
     losses = []
     for i in range(epochs):
         print("epochs: {}".format(i))
@@ -55,12 +55,27 @@ def main():
             # if iscuda
 
             input=input.to(device)   
-            target=target.to(device)
 
 
             output = net(input)
+            # print(type(output)) 
+            # print("0",output) 
+            # abc=nn.functional.one_hot(output,num_classes=10)
+            
+            output = output.to(device)
+            # print("0",output)
+            # print("1",target.size(0))
+            # print("0",target)
+
+            # # MSE 需要进行转化成one-hot编码形式，交叉熵则不需要进行转换，内置函数进行转换
             # target = torch.zeros(target.size(0), 10).scatter_(1, target.view(-1, 1), 1)
-            # target = torch.zeros(target.size(0), 10).scatter_(1, target.view(-1, 1), 1)
+
+            # print("1",target)
+            # target=torch
+            target=target.to(device)
+            # ,dtype=torch.int64
+
+
             # loss = criterion(output, target)
             # print("target",target)
             # print("output",output)

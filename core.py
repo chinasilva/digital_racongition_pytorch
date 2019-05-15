@@ -22,12 +22,15 @@ def core(net, img_path):
 
     img = transform(Image.open(img_path)).unsqueeze(0) * -1
     img = img.to(device)
-    output = net(img).to(device)
+    output = net(img)
 
     
     # generate probability
     ouptut_prob = {}
+    print("output:{}".format(output))
+
     for i, value in enumerate(F.softmax(output, dim=1)[0]):
+        print("{}:{}".format(i,value))
         ouptut_prob[i] = str(round(value.data.item() * 100, 2)) + "%"
     return {
         "max_number": str(torch.argmax(output).cpu().numpy()),

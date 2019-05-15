@@ -11,8 +11,10 @@ class ExampleNet(nn.Module):
         self.reLU_3 = nn.ReLU(inplace=False)
         self.linear_6 = nn.Linear(in_features=64, out_features=128, bias=True)
         self.reLU_7 = nn.ReLU(inplace=False)
-        self.linear_10 = nn.Linear(in_features=128, out_features=10, bias=True)
-        self.softmax_1=nn.Softmax(dim=None)
+        self.linear_10 = nn.Linear(in_features=128, out_features=256, bias=True)
+        self.reLU_8 = nn.ReLU(inplace=False)
+        self.linear_11 = nn.Linear(in_features=256, out_features=10, bias=True)
+        self.softmax_1=nn.Softmax(dim=1)
 
     def forward(self, x_para_1):
         x_reshape_4 = torch.reshape(x_para_1, shape=(-1, 28*28))
@@ -21,6 +23,7 @@ class ExampleNet(nn.Module):
         x_linear_6 = self.linear_6(x_reLU_3)
         x_reLU_7 = self.reLU_7(x_linear_6)
         x_linear_10 = self.linear_10(x_reLU_7)
-        # print("x_linear_10",x_linear_10.shape)
-        x_softmax_1=self.softmax_1(x_linear_10)
+        x_reLU_8 = self.reLU_8(x_linear_10)
+        x_linear_11 = self.linear_11(x_reLU_8)
+        x_softmax_1=self.softmax_1(x_linear_11)
         return  x_softmax_1
