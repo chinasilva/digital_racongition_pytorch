@@ -15,7 +15,7 @@ def device_fun():
 
 def main():
     epochs = 10
-    batch_size = 640
+    batch_size = 64
     # in_features=10
     # nb_classes=10
 
@@ -60,30 +60,17 @@ def main():
 
 
             output = net(input)
-            # print(type(output)) 
-            # print("0",output) 
-            # abc=nn.functional.one_hot(output,num_classes=10)
-            # output=F.LogSoftmax(output, dim=1)
-            output=F.log_softmax(output, dim=1)
+            output=F.softmax(output, dim=1)
+            # output=F.log_softmax(output, dim=1) # log_softmax 输出激活
             output = output.to(device)
-            # print("0",output)
-            # print("1",target.size(0))
-            # print("0",target)
 
             # # MSE 需要进行转化成one-hot编码形式，交叉熵则不需要进行转换，内置函数进行转换
             # target = torch.zeros(target.size(0), 10).scatter_(1, target.view(-1, 1), 1)
 
-            # print("1",target)
-            # target=torch
             target=target.to(device)
-            # ,dtype=torch.int64
 
 
-            # loss = criterion(output, target)
-            # print("target",target.shape)
-            # print("output",output.shape)
             loss = criterion(output, target)
-            # print("loss",loss)
 
             optimizer.zero_grad()
             loss.backward()
@@ -104,7 +91,7 @@ def main():
 
                 output = net(input)
                 
-    
+
                 _, predicted = torch.max(output.data, 1)
                 total += target.size(0)
                 correct += (predicted == target).sum()
