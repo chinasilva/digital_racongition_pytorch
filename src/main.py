@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
+import torch.nn.functional as F
 
 from src.ExampleNet import ExampleNet
 
@@ -27,7 +28,7 @@ def main():
 
     #调用cuda
     net.to(device)
-    criterion.to(device)
+    # criterion.to(device)
 
     # criterion = nn.MSELoss(reduce=None, size_average=None, reduction='mean')
     optimizer = optim.Adam(net.parameters(), weight_decay=0,
@@ -49,6 +50,7 @@ def main():
         testdataset, batch_size=batch_size, shuffle=False)
  
     losses = []
+    # ion
     for i in range(epochs):
         print("epochs: {}".format(i))
         for j, (input, target) in enumerate(dataloader):
@@ -61,7 +63,7 @@ def main():
             # print(type(output)) 
             # print("0",output) 
             # abc=nn.functional.one_hot(output,num_classes=10)
-            
+            output=F.softmax(output, dim=1)
             output = output.to(device)
             # print("0",output)
             # print("1",target.size(0))
@@ -77,9 +79,10 @@ def main():
 
 
             # loss = criterion(output, target)
-            # print("target",target)
-            # print("output",output)
+            # print("target",target.shape)
+            # print("output",output.shape)
             loss = criterion(output, target)
+            # print("loss",loss)
 
             optimizer.zero_grad()
             loss.backward()
@@ -88,6 +91,7 @@ def main():
                 losses.append(loss.float())
                 print("[epochs - {0} - {1}/{2}]loss: {3}".format(i,
                                                                  j, len(dataloader), loss.float()))
+                plt.plot()
         with torch.no_grad():
             print("--------------------------------")
             correct = 0
@@ -105,5 +109,6 @@ def main():
                 accuracy = correct.float() / total
             print(
                 "[epochs - {0}]Accuracy:{1}%".format(i + 1, (100 * accuracy)))
+    # ioff
     save_model = torch.jit.trace(net,  torch.rand(1, 1, 28, 28).to(device))
     save_model.save("models/net.pth")
