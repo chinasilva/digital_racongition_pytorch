@@ -15,7 +15,7 @@ def device_fun():
 
 def main():
     epochs = 10
-    batch_size = 64
+    batch_size = 640
     # in_features=10
     # nb_classes=10
 
@@ -50,7 +50,7 @@ def main():
         testdataset, batch_size=batch_size, shuffle=False)
  
     losses = []
-    # ion
+    # plt.ion() # 画动态图
     for i in range(epochs):
         print("epochs: {}".format(i))
         for j, (input, target) in enumerate(dataloader):
@@ -63,7 +63,8 @@ def main():
             # print(type(output)) 
             # print("0",output) 
             # abc=nn.functional.one_hot(output,num_classes=10)
-            output=F.softmax(output, dim=1)
+            # output=F.LogSoftmax(output, dim=1)
+            output=F.log_softmax(output, dim=1)
             output = output.to(device)
             # print("0",output)
             # print("1",target.size(0))
@@ -91,7 +92,8 @@ def main():
                 losses.append(loss.float())
                 print("[epochs - {0} - {1}/{2}]loss: {3}".format(i,
                                                                  j, len(dataloader), loss.float()))
-                plt.plot()
+                # plt.plot()
+        accuracyLst=[]
         with torch.no_grad():
             print("--------------------------------")
             correct = 0
@@ -107,8 +109,30 @@ def main():
                 total += target.size(0)
                 correct += (predicted == target).sum()
                 accuracy = correct.float() / total
+                accuracyLst.append(accuracy)
             print(
                 "[epochs - {0}]Accuracy:{1}%".format(i + 1, (100 * accuracy)))
-    # ioff
+
+            # _, ax1 = plt.subplots()
+            # ax2 = ax1.twinx()
+            # x1 = range(0, 16)
+            # x2 = range(0, 10)
+            # y1 = np.array(accuracyLst) 
+            # y2 = np.array(losses)
+            # plt.plot(x1, y1, 'o-')
+            # plt.plot(x2, y2, '.-')
+            # plt.show()
+            # ax1.set_xlabel('iteration')
+            # ax1.set_ylabel('test accuracy')
+            # ax2.set_ylabel('train loss')
+
+            # plt.plot(np.array(accuracyLst))
+
+
     save_model = torch.jit.trace(net,  torch.rand(1, 1, 28, 28).to(device))
     save_model.save("models/net.pth")
+
+    
+    
+    # plt.ioff() # 画动态图
+   

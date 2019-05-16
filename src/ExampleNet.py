@@ -20,13 +20,13 @@ class ExampleNet(nn.Module):
     def forward(self, x_para_1):
         x_reshape_4 = torch.reshape(x_para_1, shape=(-1, 28*28))
         x_linear_5 = self.linear_5(x_reshape_4)
-        x_linear_5=F.dropout(x_linear_5, p=0.5, training=self.training)
+        # x_linear_5=F.dropout(x_linear_5, p=0.5, training=self.training)
         x_reLU_3 = self.reLU_3(x_linear_5)
         x_linear_6 = self.linear_6(x_reLU_3)
-        x_linear_6=F.dropout(x_linear_6, p=0.5, training=self.training)
+        # x_linear_6=F.dropout(x_linear_6, p=0.5, training=self.training)
         x_reLU_7 = self.reLU_7(x_linear_6)
         x_linear_10 = self.linear_10(x_reLU_7)
-        x_linear_10=F.dropout(x_linear_10, p=0.5, training=self.training) # dropout 避免过拟合
+        # x_linear_10=F.dropout(x_linear_10, p=0.5, training=self.training) # dropout 避免过拟合
         x_reLU_8 = self.reLU_8(x_linear_10)
         x_linear_11 = self.linear_11(x_reLU_8)
         # x_softmax_1=self.softmax_1(x_linear_11)
