@@ -5,21 +5,112 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
+from torchvision.utils import make_grid
+import copy
+import time
 
-from src.ExampleNet import ExampleNet
+from src.MyMnistNet import MyMnistNet
+
 
 def device_fun():
     device=torch.device("cuda:0" if torch.cuda.is_available() else"cpu")
     print(device)
     return device
+# 可视化部分样本
+
+def visualize_example(input_tensors):
+    grid = make_grid(input_tensors[:64])
+    # 转置，方便显示
+    img = grid.numpy().transpose((1, 2, 0))
+    plt.figure(figsize=(12, 8))
+    plt.imshow(img)
+    plt.title('Training Examples', fontsize=24)
+    plt.savefig('Training_Examples.jpg')
+    plt.show()
+
+
+def train_loop(epochs, model, optimizer, scheduler, criterion, device, dataloader):
+    model = model.to(device)
+    model.train()
+    loss_hist, acc_hist = [], []
+    best_acc = 0.
+    best_model_wts = copy.deepcopy(model.state_dict())
+    for epoch in range(epochs):
+        since = time.time()
+        running_loss = 0.
+        running_correct = 0
+        scheduler.step()
+        for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            with torch.set_grad_enabled(True):
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                _, preds = torch.max(outputs, 1)
+                loss.backward()
+                optimizer.step()
+            running_loss += loss.item() * images.size(0)
+            running_correct += torch.sum(preds == labels.detach())
+        epoch_loss = running_loss / len(dataloader.dataset)
+        epoch_acc = running_correct.item() / len(dataloader.dataset)
+        loss_hist.append(epoch_loss)
+        acc_hist.append(epoch_acc)
+        if epoch_acc > best_acc:
+            best_acc = epoch_acc
+            best_model_wts = copy.deepcopy(model.state_dict())
+        time_elapsed = time.time() - since
+        print('Epoch: {} / {}, Loss: {:.4f}, Accuracy:{:.4f}, Time: {:.0f}m {:.0f}s'.format(
+            epoch + 1, epochs, epoch_loss, epoch_acc, time_elapsed // 60, time_elapsed % 60))
+    print('Best Accuracy: {:.4f}'.format(best_acc))
+    return best_model_wts, loss_hist, acc_hist
+
+def visualize_loss_acc(loss_hist, acc_hist):
+    plt.figure(figsize=(10, 6))
+    plt.subplot(1, 2, 1)
+    plt.plot(np.arange(len(loss_hist)), loss_hist)
+    plt.title('Loss', fontsize=16)
+    plt.xlabel("epochs")
+    plt.ylabel('loss')
+    plt.subplot(1,2,2)
+    plt.plot(np.arange(len(acc_hist)), acc_hist)
+    plt.title('Accuracy', fontsize=16)
+    plt.xlabel('epochs')
+    plt.ylabel('acc')
+    plt.savefig('Loss and Accuracy.jpg')
+    plt.show()
+
+# 测试
+def eval_loop(model, device, dataloader):
+    model.to(device)
+    model.eval()
+    result = None
+    since = time.time()
+    for images in dataloader:
+        since = time.time()
+#         visualize_example(images)
+        images = images.to(device)
+        with torch.no_grad():
+            outputs = model(images)
+            _, preds = torch.max(outputs, 1)
+#             print(preds.cpu().numpy()[:64])
+            if result is None:
+                result = preds.cpu().numpy().copy()
+            else:
+                result = np.hstack((result, preds.cpu().numpy()))
+    time_elapsed = time.time() - since
+    print('Time: {:.0f}m {:.0f}s {:.0f}ms'.format(
+        time_elapsed // 60, time_elapsed % 60, time_elapsed * 1000 % 1000))
+    return result
+
 
 def main():
-    epochs = 10
-    batch_size = 64
+    epochs = 50
+    batch_size = 512
     # in_features=10
     # nb_classes=10
 
-    net = ExampleNet()
+    model = MyMnistNet()
     criterion=nn.CrossEntropyLoss()
 
     # 定义使用GPU
@@ -27,97 +118,43 @@ def main():
     print(device)
 
     #调用cuda
-    net.to(device)
-    # criterion.to(device)
+    model.to(device)
 
-    # criterion = nn.MSELoss(reduce=None, size_average=None, reduction='mean')
-    optimizer = optim.Adam(net.parameters(), weight_decay=0,
+    optimizer = optim.Adam(model.parameters(), weight_decay=0,
                            amsgrad=False, lr=0.001, betas=(0.9, 0.999), eps=1e-08)
 
     transform = transforms.Compose([
-        transforms.Resize(28),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,)),
+        # transforms.Resize(28),
+        transforms.ToTensor()
+        # transforms.Normalize((0.5,), (0.5,)),
     ])
     dataset = datasets.MNIST("datasets/", train=True,
                              download=True, transform=transform)
-    dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=True)
 
-    testdataset = datasets.MNIST(
-        "datasets/", train=False, download=True, transform=transform)
-    testdataloader = torch.utils.data.DataLoader(
-        testdataset, batch_size=batch_size, shuffle=False)
+    # 定义 DataLoader
+    train_loader = torch.utils.data.DataLoader(dataset, 
+        batch_size=batch_size, shuffle=True, num_workers=2)
+    # 不需要labels
+    data = next(iter(train_loader))[0]
+    visualize_example(data)
+
+
+
+    lr = 1e-3
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.CrossEntropyLoss()
+    scheduler = optim.lr_scheduler.StepLR(optimizer, 20, gamma=0.1)
+
+
+    model_state_dict, loss_hist, acc_hist = \
+        train_loop(epochs, model, optimizer, scheduler, criterion, device, train_loader)
+
  
-    losses = []
-    # plt.ion() # 画动态图
-    for i in range(epochs):
-        print("epochs: {}".format(i))
-        for j, (input, target) in enumerate(dataloader):
-            # if iscuda
-
-            input=input.to(device)   
+    visualize_loss_acc(loss_hist, acc_hist)
 
 
-            output = net(input)
-            output=F.softmax(output, dim=1)
-            # output=F.log_softmax(output, dim=1) # log_softmax 输出激活
-            output = output.to(device)
-
-            # # MSE 需要进行转化成one-hot编码形式，交叉熵则不需要进行转换，内置函数进行转换
-            # target = torch.zeros(target.size(0), 10).scatter_(1, target.view(-1, 1), 1)
-
-            target=target.to(device)
-
-
-            loss = criterion(output, target)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            if j % 10 == 0:
-                losses.append(loss.float())
-                print("[epochs - {0} - {1}/{2}]loss: {3}".format(i,
-                                                                 j, len(dataloader), loss.float()))
-                # plt.plot()
-        accuracyLst=[]
-        with torch.no_grad():
-            print("--------------------------------")
-            correct = 0
-            total = 0
-            for input, target in testdataloader:
-                input=input.to(device)    # GPU 
-                target=target.to(device) # GPU
-
-                output = net(input)
-                
-
-                _, predicted = torch.max(output.data, 1)
-                total += target.size(0)
-                correct += (predicted == target).sum()
-                accuracy = correct.float() / total
-                accuracyLst.append(accuracy)
-            print(
-                "[epochs - {0}]Accuracy:{1}%".format(i + 1, (100 * accuracy)))
-
-            # _, ax1 = plt.subplots()
-            # ax2 = ax1.twinx()
-            # x1 = range(0, 16)
-            # x2 = range(0, 10)
-            # y1 = np.array(accuracyLst) 
-            # y2 = np.array(losses)
-            # plt.plot(x1, y1, 'o-')
-            # plt.plot(x2, y2, '.-')
-            # plt.show()
-            # ax1.set_xlabel('iteration')
-            # ax1.set_ylabel('test accuracy')
-            # ax2.set_ylabel('train loss')
-
-            # plt.plot(np.array(accuracyLst))
-
-
-    save_model = torch.jit.trace(net,  torch.rand(1, 1, 28, 28).to(device))
-    save_model.save("models/net.pth")
+    save_model = torch.jit.trace(model,  torch.rand(1, 1, 28, 28).to(device))
+    save_model.save("models/model.pth")
 
     
     
