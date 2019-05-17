@@ -34,6 +34,8 @@ def main():
     optimizer = optim.Adam(net.parameters(), weight_decay=0,
                            amsgrad=False, lr=0.001, betas=(0.9, 0.999), eps=1e-08)
 
+    scheduler = optim.lr_scheduler.StepLR(optimizer, 20, gamma=0.1)
+
     transform = transforms.Compose([
         transforms.Resize(28),
         transforms.ToTensor(),
@@ -53,6 +55,7 @@ def main():
     plt.ion() # 画动态图
     for i in range(epochs):
         print("epochs: {}".format(i))
+        scheduler.step()
         for j, (input, target) in enumerate(dataloader):
             # if iscuda
 
