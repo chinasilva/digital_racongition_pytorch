@@ -88,12 +88,12 @@ def eval_loop(model, device, dataloader):
     since = time.time()
     for images in dataloader:
         since = time.time()
-#         visualize_example(images)
+        #visualize_example(images)
         images = images.to(device)
         with torch.no_grad():
             outputs = model(images)
             _, preds = torch.max(outputs, 1)
-#             print(preds.cpu().numpy()[:64])
+            #print(preds.cpu().numpy()[:64])
             if result is None:
                 result = preds.cpu().numpy().copy()
             else:
@@ -105,10 +105,8 @@ def eval_loop(model, device, dataloader):
 
 
 def main():
-    epochs = 50
+    epochs = 10
     batch_size = 512
-    # in_features=10
-    # nb_classes=10
 
     model = MyMnistNet()
     criterion=nn.CrossEntropyLoss()
@@ -130,6 +128,9 @@ def main():
     ])
     dataset = datasets.MNIST("datasets/", train=True,
                              download=True, transform=transform)
+    #测试集
+    datasetTest = datasets.MNIST("datasets/", train=False,
+                            download=True, transform=transform)
 
     # 定义 DataLoader
     train_loader = torch.utils.data.DataLoader(dataset, 
@@ -149,12 +150,21 @@ def main():
     model_state_dict, loss_hist, acc_hist = \
         train_loop(epochs, model, optimizer, scheduler, criterion, device, train_loader)
 
- 
+    # 损失及识别率显示
     visualize_loss_acc(loss_hist, acc_hist)
 
+    # 测试
+    model.load_state_dict(model_state_dict)
+    # 测试集搞什么 shuffle，吐血三升
+    test_loader = torch.utils.data.DataLoader(datasetTest, 
+        batch_size=512, shuffle=False, num_workers=2)
 
+    result = eval_loop(model, device, test_loader)
+
+    # 保存模型
     save_model = torch.jit.trace(model,  torch.rand(1, 1, 28, 28).to(device))
-    save_model.save("models/model.pth")
+    save_model.save("models/net.pth")
+
 
     
     

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# 定义网络
+# 
 class MyMnistNet(nn.Module):
 
     def __init__(self,):
