@@ -21,8 +21,9 @@ def core(net, img_path):
     ])
 
     img = transform(Image.open(img_path)).unsqueeze(0) * -1
+    # print("img:{}".format(img))
     img = img.to(device)
-    output = net(img)
+    output = net(img).to(device)
 
     
     # generate probability

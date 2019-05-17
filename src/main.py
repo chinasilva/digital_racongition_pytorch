@@ -50,17 +50,17 @@ def main():
         testdataset, batch_size=batch_size, shuffle=False)
  
     losses = []
-    # plt.ion() # 画动态图
+    plt.ion() # 画动态图
     for i in range(epochs):
         print("epochs: {}".format(i))
         for j, (input, target) in enumerate(dataloader):
             # if iscuda
 
-            input=input.to(device)   
+            input=input.to(device)
 
 
             output = net(input)
-            output=F.softmax(output, dim=1)
+            # output=F.softmax(output, dim=1)
             # output=F.log_softmax(output, dim=1) # log_softmax 输出激活
             output = output.to(device)
 
@@ -79,13 +79,13 @@ def main():
                 losses.append(loss.float())
                 print("[epochs - {0} - {1}/{2}]loss: {3}".format(i,
                                                                  j, len(dataloader), loss.float()))
-                # plt.plot()
+               
         accuracyLst=[]
         with torch.no_grad():
             print("--------------------------------")
             correct = 0
             total = 0
-            for input, target in testdataloader:
+            for k,(input, target) in enumerate(testdataloader):
                 input=input.to(device)    # GPU 
                 target=target.to(device) # GPU
 
@@ -96,30 +96,38 @@ def main():
                 total += target.size(0)
                 correct += (predicted == target).sum()
                 accuracy = correct.float() / total
-                accuracyLst.append(accuracy)
+                # print("correct:",correct)
+                # print("total:",total)
+                # accuracyLst.append(accuracy)
+                if k % 10 == 0:
+                    accuracyLst.append(accuracy)
             print(
                 "[epochs - {0}]Accuracy:{1}%".format(i + 1, (100 * accuracy)))
+        
+        # plt.clf()#清空内容
+        losses=list(filter(lambda x: x<1.7,losses)) #过滤部分损失，使图象更直观
+        x=range(len(losses)*(i),len(losses)*(i+1))
+        # x=range(0,len(losses))
+        plt.subplot(2, 1, 1)
+        plt.plot(x,losses)
+        plt.pause(0.5)
+        plt.ylabel('Test losses')
 
-            # _, ax1 = plt.subplots()
-            # ax2 = ax1.twinx()
-            # x1 = range(0, 16)
-            # x2 = range(0, 10)
-            # y1 = np.array(accuracyLst) 
-            # y2 = np.array(losses)
-            # plt.plot(x1, y1, 'o-')
-            # plt.plot(x2, y2, '.-')
-            # plt.show()
-            # ax1.set_xlabel('iteration')
-            # ax1.set_ylabel('test accuracy')
-            # ax2.set_ylabel('train loss')
+        x2=range(len(accuracyLst)*(i),len(accuracyLst)*(i+1))
+        # x2=range(0,len(accuracyLst))
+        plt.subplot(2, 1, 2)
+        plt.plot(x2,accuracyLst)
+        plt.pause(0.5)
+        plt.ylabel('Test accuracy')
 
-            # plt.plot(np.array(accuracyLst))
+        accuracyLst=[]
+        losses=[]
 
 
     save_model = torch.jit.trace(net,  torch.rand(1, 1, 28, 28).to(device))
     save_model.save("models/net.pth")
 
     
-    
-    # plt.ioff() # 画动态图
-   
+    plt.savefig("accuracy_loss.jpg")
+    plt.ioff() # 画动态图
+    plt.show() # 保留最后一张，程序结束后不关闭
