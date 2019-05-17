@@ -65,7 +65,11 @@ def train_loop(epochs, model, optimizer, scheduler, criterion, device, dataloade
     print('Best Accuracy: {:.4f}'.format(best_acc))
     return best_model_wts, loss_hist, acc_hist
 
+
 def visualize_loss_acc(loss_hist, acc_hist):
+    '''
+    可视化损失和梯度
+    '''
     plt.figure(figsize=(10, 6))
     plt.subplot(1, 2, 1)
     plt.plot(np.arange(len(loss_hist)), loss_hist)
@@ -80,8 +84,10 @@ def visualize_loss_acc(loss_hist, acc_hist):
     plt.savefig('Loss and Accuracy.jpg')
     plt.show()
 
-# 测试
 def eval_loop(model, device, dataloader):
+    '''
+    测试
+    '''
     model.to(device)
     model.eval()
     result = None
