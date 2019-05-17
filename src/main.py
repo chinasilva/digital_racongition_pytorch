@@ -86,87 +86,31 @@ def visualize_loss_acc(loss_hist, acc_hist):
 
 
 
-def test_loop(epochs, model, optimizer, scheduler, criterion, device, dataloader):
+def eval_loop(model, device, dataloader):
     '''
-
+    测试
     '''
-    model = model.to(device)
-    loss_hist, acc_hist = [], []
-    best_acc = 0.
-    for epoch in range(epochs):
+    pass
+    model.to(device)
+    model.eval()
+    result = None
+    since = time.time()
+    for images in dataloader:
         since = time.time()
-        running_loss = 0.
-        running_correct = 0
-        scheduler.step()
-        for images, labels in dataloader:
-            images = images.to(device)
-            labels = labels.to(device)
-            
-            with torch.no_grad():
-                outputs = model(images)
-                loss = criterion(outputs, labels)
-                _, preds = torch.max(outputs, 1)
-            running_loss += loss.item() * images.size(0)
-            running_correct += torch.sum(preds == labels.detach())
-        epoch_loss = running_loss / len(dataloader.dataset)
-        epoch_acc = running_correct.item() / len(dataloader.dataset)
-        loss_hist.append(epoch_loss)
-        acc_hist.append(epoch_acc)
-        if epoch_acc > best_acc:
-            best_acc = epoch_acc
-            best_model_wts = copy.deepcopy(model.state_dict())
-        time_elapsed = time.time() - since
-        print('Epoch: {} / {}, Loss: {:.4f}, Accuracy:{:.4f}, Time: {:.0f}m {:.0f}s'.format(
-            epoch + 1, epochs, epoch_loss, epoch_acc, time_elapsed // 60, time_elapsed % 60))
-    print('Best Accuracy: {:.4f}'.format(best_acc))
-    return best_model_wts, loss_hist, acc_hist
-#     model.to(device)
-#     model.eval()
-#     result = None
-#     since = time.time()
-#     for images in dataloader:
-#         since = time.time()
-#         #visualize_example(images)
-#         images = images.to(device)
-#         with torch.no_grad():
-#             outputs = model(images)
-#             _, preds = torch.max(outputs, 1)
-#             #print(preds.cpu().numpy()[:64])
-#             if result is None:
-#                 result = preds.cpu().numpy().copy()
-#             else:
-#                 result = np.hstack((result, preds.cpu().numpy()))
-#     time_elapsed = time.time() - since
-#     print('Time: {:.0f}m {:.0f}s {:.0f}ms'.format(
-#         time_elapsed // 60, time_elapsed % 60, time_elapsed * 1000 % 1000))
-#     return result
-
-
-
-# def eval_loop(model, device, dataloader):
-#     '''
-#     测试
-#     '''
-#     model.to(device)
-#     model.eval()
-#     result = None
-#     since = time.time()
-#     for images in dataloader:
-#         since = time.time()
-#         #visualize_example(images)
-#         images = images.to(device)
-#         with torch.no_grad():
-#             outputs = model(images)
-#             _, preds = torch.max(outputs, 1)
-#             #print(preds.cpu().numpy()[:64])
-#             if result is None:
-#                 result = preds.cpu().numpy().copy()
-#             else:
-#                 result = np.hstack((result, preds.cpu().numpy()))
-#     time_elapsed = time.time() - since
-#     print('Time: {:.0f}m {:.0f}s {:.0f}ms'.format(
-#         time_elapsed // 60, time_elapsed % 60, time_elapsed * 1000 % 1000))
-#     return result
+        #visualize_example(images)
+        images = images.to(device)
+        with torch.no_grad():
+            outputs = model(images)
+            _, preds = torch.max(outputs, 1)
+            #print(preds.cpu().numpy()[:64])
+            if result is None:
+                result = preds.cpu().numpy().copy()
+            else:
+                result = np.hstack((result, preds.cpu().numpy()))
+    time_elapsed = time.time() - since
+    print('Time: {:.0f}m {:.0f}s {:.0f}ms'.format(
+        time_elapsed // 60, time_elapsed % 60, time_elapsed * 1000 % 1000))
+    return result
 
 
 def main():
@@ -218,13 +162,13 @@ def main():
     # 损失及识别率显示
     visualize_loss_acc(loss_hist, acc_hist)
 
-    # 测试
-    model.load_state_dict(model_state_dict)
-    # 测试集搞什么 shuffle，吐血三升
-    test_loader = torch.utils.data.DataLoader(datasetTest, 
-        batch_size=512, shuffle=False, num_workers=2)
+    # # 测试
+    # model.load_state_dict(model_state_dict)
+    # # 测试集搞什么 shuffle，吐血三升
+    # test_loader = torch.utils.data.DataLoader(datasetTest, 
+    #     batch_size=512, shuffle=False, num_workers=2)
         
-    test_loop(epochs, model, optimizer, scheduler, criterion, device, dataloader)
+    # test_loop(epochs, model, optimizer, scheduler, criterion, device, test_loader)
 
 
     # 保存模型
