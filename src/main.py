@@ -118,7 +118,6 @@ def main():
     batch_size = 512
 
     model = MyMnistNet()
-    criterion=nn.CrossEntropyLoss()
 
     # 定义使用GPU
     device=device_fun()
@@ -127,8 +126,11 @@ def main():
     #调用cuda
     model.to(device)
 
-    optimizer = optim.Adam(model.parameters(), weight_decay=0,
-                           amsgrad=False, lr=0.001, betas=(0.9, 0.999), eps=1e-08)
+    lr = 1e-3
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.CrossEntropyLoss()
+    scheduler = optim.lr_scheduler.StepLR(optimizer, 20, gamma=0.1)
+    
 
     transform = transforms.Compose([
         # transforms.Resize(28),
@@ -147,13 +149,6 @@ def main():
     # 不需要labels
     data = next(iter(train_loader))[0]
     visualize_example(data)
-
-
-
-    lr = 1e-3
-    optimizer = optim.Adam(model.parameters(), lr=lr)
-    criterion = nn.CrossEntropyLoss()
-    scheduler = optim.lr_scheduler.StepLR(optimizer, 20, gamma=0.1)
 
 
     model_state_dict, loss_hist, acc_hist = \
