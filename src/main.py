@@ -14,7 +14,7 @@ def device_fun():
     return device
 
 def main():
-    epochs = 10
+    epochs = 100
     batch_size = 64
     # in_features=10
     # nb_classes=10
@@ -32,7 +32,7 @@ def main():
 
     # criterion = nn.MSELoss(reduce=None, size_average=None, reduction='mean')
     optimizer = optim.Adam(net.parameters(), weight_decay=0,
-                           amsgrad=False, lr=0.001, betas=(0.9, 0.999), eps=1e-08)
+                           amsgrad=False, lr=0.0001, betas=(0.9, 0.999), eps=1e-08)
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, 20, gamma=0.1)
 
