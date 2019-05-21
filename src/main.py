@@ -88,7 +88,7 @@ def visualize_loss_acc(loss_hist, acc_hist):
 
 def eval_loop(model, device, dataloader):
     '''
-    测试
+    测试训练好的模型在测试中运行时间
     '''
     pass
     model.to(device)
@@ -114,7 +114,7 @@ def eval_loop(model, device, dataloader):
 
 
 def main():
-    epochs = 10
+    epochs = 50
     batch_size = 512
 
     model = MyMnistNet()
@@ -157,14 +157,14 @@ def main():
     # 损失及识别率显示
     visualize_loss_acc(loss_hist, acc_hist)
 
-    # # 测试
-    # model.load_state_dict(model_state_dict)
-    # # 测试集搞什么 shuffle，吐血三升
-    # test_loader = torch.utils.data.DataLoader(datasetTest, 
-    #     batch_size=512, shuffle=False, num_workers=2)
+    # 测试
+    model.load_state_dict(model_state_dict)
+    # 测试集搞什么 shuffle，吐血三升
+    test_loader = torch.utils.data.DataLoader(datasetTest, 
+        batch_size=512, shuffle=False, num_workers=2)
         
-    # test_loop(epochs, model, optimizer, scheduler, criterion, device, test_loader)
-
+    
+    result = eval_loop(model, device, test_loader)
 
     # 保存模型
     save_model = torch.jit.trace(model,  torch.rand(1, 1, 28, 28).to(device))
