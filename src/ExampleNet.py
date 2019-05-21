@@ -20,7 +20,7 @@ class ExampleNet(nn.Module):
         self.reLU_8 = nn.ReLU(inplace=False)
         self.linear_11 = nn.Linear(in_features=64, out_features=10, bias=True)
         # self.bn_input = nn.BatchNorm2d(1, momentum=0.5)   # 给 input 的 BN 归一化
-        self.softmax_1=nn.Softmax(dim=1)
+        # self.softmax_1=nn.Softmax(dim=1)
 
     def forward(self, x_para_1):
 
@@ -42,5 +42,5 @@ class ExampleNet(nn.Module):
         # x_linear_10=F.dropout(x_linear_10, p=0.5, training=self.training) # dropout 避免过拟合
         x_reLU_8 = self.reLU_8(x_linear_10)
         x_linear_11 = self.linear_11(x_reLU_8)
-        x_softmax_1=self.softmax_1(x_linear_11)
-        return  x_softmax_1 #x_softmax_1
+        # x_softmax_1=self.softmax_1(x_linear_11)
+        return  x_linear_11 #x_softmax_1

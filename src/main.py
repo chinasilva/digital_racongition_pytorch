@@ -79,13 +79,13 @@ def main():
             loss.backward()
             optimizer.step()
             if j % 10 == 0:
-                losses.append(loss.float())
                 print("[epochs - {0} - {1}/{2}]loss: {3}".format(i,
                                                                  j, len(dataloader), loss.float()))
-               
+            if j % 100 == 0:
+                losses.append(loss.float())
+        # print("--------------------------------0",losses)
         accuracyLst=[]
         with torch.no_grad():
-            print("--------------------------------")
             correct = 0
             total = 0
             for k,(input, target) in enumerate(testdataloader):
@@ -109,8 +109,8 @@ def main():
         
         # plt.clf()#清空内容
         losses=list(filter(lambda x: x<1.7,losses)) #过滤部分损失，使图象更直观
+        
         x=range(len(losses)*(i),len(losses)*(i+1))
-        # x=range(0,len(losses))
         plt.subplot(2, 1, 1)
         plt.plot(x,losses)
         plt.pause(0.5)
