@@ -22,7 +22,7 @@ class ExampleNet(nn.Module):
         # self.bn_input = nn.BatchNorm2d(1, momentum=0.5)   # 给 input 的 BN 归一化
         self.softmax_1=nn.Softmax(dim=1)
         self.drop_out1=nn.Dropout(p=0.5)
-        self.drop_out2=nn.Dropout(p=0.5)
+        self.drop_out2=nn.Dropout(p=0.5) 
 
     def forward(self, x_para_1):
 
