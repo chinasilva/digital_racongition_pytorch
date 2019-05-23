@@ -15,7 +15,7 @@ def device_fun():
 
 def main():
     epochs = 100
-    batch_size = 64
+    batch_size = 6400
     # in_features=10
     # nb_classes=10
 
